@@ -1,0 +1,99 @@
+#!/bin/sh
+
+#
+# configure script for libfile
+#
+
+for arg in "$@"; do
+    case "$arg" in
+        ARCH=*)
+            ARCH="${arg#ARCH=}"
+            ;;
+    esac
+done
+
+# Determine CONFIGARCH from ARCH
+if [ -n "$ARCH" ]; then
+    case "$ARCH" in
+        i386|i686|x86|x86_32|x32)
+            CONFIGARCH="32"
+            ;;
+        x86_64|amd64|x64)
+            CONFIGARCH="64"
+            ;;
+        *)
+            echo "invalid ARCH value, defaulting to CPU arch"
+            ;;
+    esac
+fi
+
+# Fallback to uname if CONFIGARCH still unset
+if [ -z "$CONFIGARCH" ]; then
+    if command -v uname >/dev/null 2>&1; then
+        UNAME_ARCH=$(uname -m)
+        case "$UNAME_ARCH" in
+            x86_64) CONFIGARCH="64" ;;
+            i386|i686) CONFIGARCH="32" ;;
+            *) CONFIGARCH="32" ;;
+        esac
+    else
+        echo "uname not found to check for architecture, aborting..."
+        exit 1
+    fi
+fi
+
+# Tool check
+check_tool() {
+    TOOL=$1
+    echo -n "checking for $TOOL... "
+    if command -v "$TOOL" >/dev/null 2>&1; then
+        echo "yes"
+    else
+        echo "no"
+        echo "$TOOL not found, aborting..."
+        exit 1
+    fi
+}
+
+# Header check
+check_header() {
+    HEADER=$1
+    echo "#include <$HEADER>" > test.c
+    echo "int main() { return 0; }" >> test.c
+
+    echo -n "checking for $HEADER... "
+    if cc -o test test.c 2>/dev/null; then
+        echo "yes"
+    else
+        echo "no"
+        echo "$HEADER not found, aborting..."
+        rm -f test.c test
+        exit 1
+    fi
+    rm -f test.c test
+}
+
+# Run checks
+check_tool gcc
+check_tool make
+check_tool strip
+check_header fcntl.h
+check_header unistd.h
+check_header stdint.h
+check_header string.h
+
+# Emit config.mak
+echo "configure: creating config.mak..."
+echo "CC = gcc" > config.mak
+echo -n "CFLAGS = -Wall -O2 -fPIC -Iinclude" >> config.mak
+if [ "$CONFIGARCH" = "32" ]; then
+    echo " -m32" >> config.mak
+    echo "LDFLAGS = -m32" >> config.mak
+else
+    echo " -m64" >> config.mak
+    echo "LDFLAGS = -m64" >> config.mak
+fi
+echo "CONFIGARCH = $CONFIGARCH" >> config.mak
+
+echo "Done."
+
