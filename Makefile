@@ -3,7 +3,7 @@ include config.mak
 SRC = src/libfile.c
 OBJ = src/libfile.o
 
-all: libfile.a 	libfile.so.1.0.2 include/file.h
+all: libfile.a libfile.so.1.0.2 include/file.h
 
 # Static library
 libfile.a: $(OBJ)
@@ -15,7 +15,7 @@ libfile.so.1.0.2: $(OBJ)
 	@echo "LD $@"
 	@$(CC) $(LDFLAGS) -shared -o $@ $^
 	@echo "LN $@"
-	@ln -s ./	libfile.so.1.0.2 libfile.so.1
+	@ln -s ./libfile.so.1.0.2 libfile.so.1
 	@ln -s ./libfile.so.1 libfile.so
 	@echo "STRIP $@"
 	@strip $@
