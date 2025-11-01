@@ -3,7 +3,7 @@ include config.mak
 SRC = src/libfile.c
 OBJ = src/libfile.o
 
-all: libfile.a libfile.so.1.0.1 include/file.h
+all: libfile.a 	libfile.so.1.0.2 include/file.h
 
 # Static library
 libfile.a: $(OBJ)
@@ -11,11 +11,11 @@ libfile.a: $(OBJ)
 	@ar rcs $@ $^
 
 # Shared library
-libfile.so.1.0.1: $(OBJ)
+libfile.so.1.0.2: $(OBJ)
 	@echo "LD $@"
 	@$(CC) $(LDFLAGS) -shared -o $@ $^
 	@echo "LN $@"
-	@ln -s ./libfile.so.1.0.1 libfile.so.1
+	@ln -s ./	libfile.so.1.0.2 libfile.so.1
 	@ln -s ./libfile.so.1 libfile.so
 	@echo "STRIP $@"
 	@strip $@
@@ -44,14 +44,33 @@ src/%.o: src/%.c
 	@echo "CC $@"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
-install:
+install-deb:
+	ifeq ($(CONFIGARCH),32)
+		@echo "CP include/file.h"
+		@echo "Copying needs root permissions, please allow."
+		@sudo cp include/file.h /usr/include
+		@echo "CP libfile.so.1.0.2, libfile.so.1, libfile.so"
+		@sudo cp libfile.so.1.0.2 /usr/lib/i386-linux-gnu
+		@sudo cp libfile.so.1 /usr/lib/i386-linux-gnu
+		@sudo cp libfile.so /usr/lib/i386-linux-gnu
+	else
+		@echo "CP include/file.h"
+		@echo "Copying needs root permissions, please allow."
+		@sudo cp include/file.h /usr/include
+		@echo "CP libfile.so.1.0.2, libfile.so.1, libfile.so"
+		@sudo cp libfile.so.1.0.2 /usr/lib/x86_64-linux-gnu
+		@sudo cp libfile.so.1 /usr/lib/x86_64-linux-gnu
+		@sudo cp libfile.so /usr/lib/x86_64-linux-gnu
+	endif
+
+install-arch:
 	@echo "CP include/file.h"
 	@echo "Copying needs root permissions, please allow."
-	@sudo cp include/file.h /usr/include/
-	@echo "CP libfile.so.1.0.1, libfile.so.1, libfile.so"
-	@sudo cp libfile.so.1.0.1 /usr/lib/i386-linux-gnu
-	@sudo cp libfile.so.1 /usr/lib/i386-linux-gnu
-	@sudo cp libfile.so /usr/lib/i386-linux-gnu
+	@sudo cp include/file.h /usr/include
+	@echo "CP libfile.so.1.0.2, libfile.so.1, libfile.so"
+	@sudo cp libfile.so.1.0.2 /usr/lib
+	@sudo cp libfile.so.1 /usr/lib
+	@sudo cp libfile.so /usr/lib
 
 clean:
 	@echo "RM src/*.o *.a *.so.* *.so include/"
