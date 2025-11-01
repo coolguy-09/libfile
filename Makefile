@@ -14,6 +14,9 @@ libfile.a: $(OBJ)
 libfile.so.1.0.0: $(OBJ)
 	@echo "LD $@"
 	@$(CC) $(LDFLAGS) -shared -o $@ $^
+	@echo "LN $@"
+	@ln -s ./libfile.so.1.0.0 libfile.so.1
+	@ln -s ./libfile.so.1 libfile.so
 	@echo "STRIP $@"
 	@strip $@
 
@@ -41,6 +44,15 @@ src/%.o: src/%.c
 	@echo "CC $@"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
+install:
+	@echo "CP include/file.h"
+	@echo "Copying needs root permissions, please allow."
+	@sudo cp include/file.h /usr/include/
+	@echo "CP libfile.so.1.0.0, libfile.so.1, libfile.so"
+	@sudo cp libfile.so.1.0.0 /usr/lib/i386-linux-gnu
+	@sudo cp libfile.so.1 /usr/lib/i386-linux-gnu
+	@sudo cp libfile.so /usr/lib/i386-linux-gnu
+
 clean:
-	@echo "RM src/*.o *.a *.so.* include/"
-	@rm -rf src/*.o *.a *.so.* include/
+	@echo "RM src/*.o *.a *.so.* *.so include/"
+	@rm -rf src/*.o *.a *.so.* *.so include/
